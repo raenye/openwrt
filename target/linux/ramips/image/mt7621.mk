@@ -22,6 +22,30 @@ define Build/arcadyan-trx
 	rm $@.hsqs $@.tail
 endef
 
+define Build/dlink-aes-and-imghdr
+	echo -n "$(MODEL_NAME)" | \
+		$(STAGING_DIR_HOST)/bin/openssl dgst -sha1 -hmac $(DLINK_HWID) | \
+		cut -d' ' -f2 > $@.key
+	$(STAGING_DIR_HOST)/bin/openssl aes-256-cbc -e -kfile $@.key -md md5 -in $@ -out $@.aes
+	( \
+		echo -ne "\x01\x00\x00\x00"; \
+		echo -ne "$$(printf '%08x' $$(stat -c%s $@.aes) | fold -s2 | \
+			xargs -I {} echo \\x{} | tac | tr -d '\n')"; \
+		cat $@.aes \
+	) > $@.tlv
+	( \
+		echo -ne "\x64\x80\x19\x40"; \
+		echo -n $(DEVICE_MODEL) | dd bs=32 count=1 conv=sync; \
+		echo -n $(DLINK_HWID) | dd bs=32 count=1 conv=sync; \
+		echo -ne "\x01\x00\x00\x00"; \
+		echo -ne "$$(printf '%08x' $$(stat -c%s $@.tlv) | fold -s2 | \
+			xargs -I {} echo \\x{} | tac | tr -d '\n')"; \
+		$(MKHASH) md5 $@.tlv | head -c32; \
+		cat $@.tlv \
+	) > $@
+	rm -f $@.aes $@.key $@.tlv
+endef
+
 define Build/gemtek-trailer
 	printf "%s%08X" ".GEMTEK." "$$(cksum $@ | cut -d ' ' -f1)" >> $@
 endef
@@ -645,10 +669,11 @@ define Device/dlink_dxx-1xx0-x1
   DEVICE_VENDOR := D-Link
   DEVICE_PACKAGES := kmod-mt7615-firmware rssileds -uboot-envtools
   IMAGE_SIZE := 16064k
-  IMAGES += factory.bin
-  IMAGE/factory.bin := append-kernel | append-rootfs | \
+  IMAGES += recovery.bin factory.bin
+  IMAGE/recovery.bin := append-kernel | append-rootfs | \
     pad-rootfs -x 60 | append-md5sum-ascii-salted ffff | \
     append-string $$$$(DLINK_HWID) | check-size
+  IMAGE/factory.bin := $$(IMAGE/recovery.bin) | dlink-aes-and-imghdr
 endef
 
 define Device/dlink_dap-1620-b1
