@@ -10,8 +10,8 @@
 	aliases {
 		label-mac-device = &gmac0;
 
-		led-boot = &led_status_red;
-		led-failsafe = &led_status_green;
+		led-boot = &led_status_green;
+		led-failsafe = &led_status_red;
 		led-running = &led_status_green;
 		led-upgrade = &led_status_red;
 	};
@@ -19,14 +19,14 @@
 	keys {
 		compatible = "gpio-keys";
 
-		reset {
+		button-reset {
 			label = "reset";
 			gpios = <&gpio 7 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_RESTART>;
 			debounce-interval = <60>;
 		};
 
-		wps {
+		button-wps {
 			label = "wps";
 			gpios = <&gpio 18 GPIO_ACTIVE_LOW>;
 			linux,code = <KEY_WPS_BUTTON>;
@@ -36,36 +36,44 @@
 	leds {
 		compatible = "gpio-leds";
 
-		led_status_red: status_red {
-			function = LED_FUNCTION_STATUS;
-			color = <LED_COLOR_ID_RED>;
-			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
-		};
-
-		led_status_green: status_green {
-			function = LED_FUNCTION_STATUS;
+		led_status_green: led-status-green {
 			color = <LED_COLOR_ID_GREEN>;
+			function = LED_FUNCTION_STATUS;
 			gpios = <&gpio 13 GPIO_ACTIVE_LOW>;
 		};
 
-		rssi_low_red {
-			label = "red:rssilow";
-			gpios = <&gpio 25 GPIO_ACTIVE_LOW>;
+		led_status_red: led-status-red {
+			color = <LED_COLOR_ID_RED>;
+			function = LED_FUNCTION_STATUS;
+			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
 		};
 
-		rssi_low_green {
-			label = "green:rssilow";
-			gpios = <&gpio 24 GPIO_ACTIVE_LOW>;
+		led-rssi-top {
+			color = <LED_COLOR_ID_GREEN>;
+			function = "signal"; //LED_FUNCTION_SIGNAL;
+			function-enumerator = <3>;
+			gpios = <&gpio 22 GPIO_ACTIVE_LOW>;
 		};
 
-		rssi_med_green {
-			label = "green:rssimed";
+		led-rssi-middle {
+			color = <LED_COLOR_ID_GREEN>;
+			function = "signal"; //LED_FUNCTION_SIGNAL;
+			function-enumerator = <2>;
 			gpios = <&gpio 23 GPIO_ACTIVE_LOW>;
 		};
 
-		rssi_high_green {
-			label = "green:rssihigh";
-			gpios = <&gpio 22 GPIO_ACTIVE_LOW>;
+		led-rssi-bottom-green {
+			color = <LED_COLOR_ID_GREEN>;
+			function = "signal"; //LED_FUNCTION_SIGNAL;
+			function-enumerator = <1>;
+			gpios = <&gpio 24 GPIO_ACTIVE_LOW>;
+		};
+
+		led-rssi-bottom-red {
+			color = <LED_COLOR_ID_RED>;
+			function = "signal"; //LED_FUNCTION_SIGNAL;
+			function-enumerator = <1>;
+			gpios = <&gpio 25 GPIO_ACTIVE_LOW>;
 		};
 	};
 };
@@ -77,11 +85,11 @@
 		compatible = "jedec,spi-nor";
 		reg = <0>;
 		spi-max-frequency = <50000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
 
 		partitions {
 			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
 
 			partition@0 {
 				label = "u-boot";
@@ -110,7 +118,9 @@
 					};
 
 					macaddr_factory_e000: macaddr@e000 {
+						compatible = "mac-base";
 						reg = <0xe000 0x6>;
+						#nvmem-cell-cells = <1>;
 					};
 				};
 			};
@@ -134,12 +144,26 @@
 		reg = <0x0000 0 0 0 0>;
 		nvmem-cells = <&eeprom_factory_0>;
 		nvmem-cell-names = "eeprom";
-		/* The correct MAC addresses are set in 10_fix_wifi_mac. */
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		band@0 { /* 2.4 GHz */
+			reg = <0>;
+			nvmem-cells = <&macaddr_factory_e000 1>;
+			nvmem-cell-names = "mac-address";
+		};
+
+		band@1 { /* 5 GHz */
+			reg = <1>;
+			nvmem-cells = <&macaddr_factory_e000 2>;
+			nvmem-cell-names = "mac-address";
+		};
 	};
 };
 
 &gmac0 {
-	nvmem-cells = <&macaddr_factory_e000>;
+	nvmem-cells = <&macaddr_factory_e000 0>;
 	nvmem-cell-names = "mac-address";
 };
 

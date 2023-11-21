@@ -79,10 +79,10 @@ xzwifi,creativebox-v1)
 dlink,dap-1620-b1|\
 dlink,dra-1360-a1)
 	ucidef_set_rssimon "wlan1" "200000" "1"
-	ucidef_set_led_rssi "rssilow" "RSSILOW" "red:rssilow" "wlan1" "1" "40"
-	ucidef_set_led_rssi "rssimediumlow" "RSSIMEDIUMLOW" "green:rssilow" "wlan1" "21" "100"
-	ucidef_set_led_rssi "rssimediumhigh" "RSSIMEDIUMHIGH" "green:rssimed" "wlan1" "61" "100"
-	ucidef_set_led_rssi "rssihigh" "RSSIHIGH" "green:rssihigh" "wlan1" "81" "100"
+	ucidef_set_led_rssi "rssilow" "RSSILOW" "red:signal-1" "wlan1" "1" "40"
+	ucidef_set_led_rssi "rssimediumlow" "RSSIMEDIUMLOW" "green:signal-1" "wlan1" "21" "100"
+	ucidef_set_led_rssi "rssimediumhigh" "RSSIMEDIUMHIGH" "green:signal-2" "wlan1" "61" "100"
+	ucidef_set_led_rssi "rssihigh" "RSSIHIGH" "green:signal-3" "wlan1" "81" "100"
 	;;
 dlink,dap-x1860-a1)
 	ucidef_set_rssimon "wlan1" "200000" "1"

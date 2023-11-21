@@ -44,15 +44,6 @@ case "$board" in
 		[ "$PHYNBR" = "1" ] && \
 		macaddr_setbit_la "$(macaddr_add $hw_mac_addr 0x100000)" > /sys${DEVPATH}/macaddress
 		;;
-	dlink,dap-1620-b1|\
-	dlink,dir-853-a1|\
-	dlink,dra-1360-a1)
-		lan_mac_addr="$(mtd_get_mac_binary factory 0xe000)"
-		[ "$PHYNBR" = "0" ] && \
-			macaddr_add $lan_mac_addr 1 > /sys${DEVPATH}/macaddress
-		[ "$PHYNBR" = "1" ] && \
-			macaddr_add $lan_mac_addr 2 > /sys${DEVPATH}/macaddress
-		;;
 	dlink,covr-x1860-a1)
 		label_mac=$(mtd_get_mac_ascii config2 factory_mac)
 		[ "$PHYNBR" = "0" ] && \
@@ -70,6 +61,13 @@ case "$board" in
 	dlink,dir-3040-a1)
 		lan_mac_addr="$(mtd_get_mac_binary factory 0xe000)"
 		[ "$PHYNBR" = "0" ] && \
+			macaddr_add $lan_mac_addr 2 > /sys${DEVPATH}/macaddress
+		;;
+	dlink,dir-853-a1)
+		lan_mac_addr="$(mtd_get_mac_binary factory 0xe000)"
+		[ "$PHYNBR" = "0" ] && \
+			macaddr_add $lan_mac_addr 1 > /sys${DEVPATH}/macaddress
+		[ "$PHYNBR" = "1" ] && \
 			macaddr_add $lan_mac_addr 2 > /sys${DEVPATH}/macaddress
 		;;
 	dlink,dir-853-a3)
